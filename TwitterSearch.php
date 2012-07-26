@@ -8,6 +8,19 @@
  * @package PHPTwitterSearch
  */
 class TwitterSearch {
+    
+    /**
+     * Whether to return tweet metadata. Default is false.
+     * @var boolean
+     */
+    var $include_entities = false;
+    
+    /**
+     * Type of results to recieve; mixed, popular or recent.
+     * @var string    
+     */
+    var $result_type;
+    
 	/**
 	 * Can be set to JSON (requires PHP 5.2 or the json pecl module) or XML - json|xml
 	 * @var string
@@ -42,6 +55,12 @@ class TwitterSearch {
 	 * @var string
 	 */
 	var $lang;
+    
+    /**
+     * Language of query (only ja is currently effective).
+     * @var string
+     */
+    var $locale;
 	
 	/**
 	 * The number of tweets to return per page, max 100
@@ -60,6 +79,12 @@ class TwitterSearch {
 	 * @var int
 	 */
 	var $since;
+    
+    /**
+     * Return tweets with a status id smaller than the max value
+     * @var int
+     */
+    var $max;
 	
 	/**
 	 * Returns tweets by users located within a given radius of the given latitude/longitude, where the user's location is taken from their Twitter profile. The parameter value is specified by "latitide,longitude,radius", where radius units must be specified as either "mi" (miles) or "km" (kilometers)
@@ -129,6 +154,25 @@ class TwitterSearch {
 		$this->query .= ' '.$word;
 		return $this;
 	}
+    
+    /**
+     * Set include_entities to true
+     * @return object
+     */
+    function include_entities() {
+        $this->include_entities = true;
+        return $this;
+    }
+    
+    /**
+     * @param string $type required
+     * @return object
+     */
+    function result_type($type) {
+        $this->result_type = $type;
+        return $this;
+        
+    }
 	
 	/**
 	* Set show_user to true
@@ -148,6 +192,15 @@ class TwitterSearch {
 		return $this;
 	}
 	
+    /**
+     * @param int $max_id required
+     * @return object
+     */
+    function max($max_id) {
+        $this->max = $max_id;
+        return $this;
+    }
+    
 	/**
 	* @param int $language required
 	* @return object
@@ -157,6 +210,16 @@ class TwitterSearch {
 		return $this;
 	}
 	
+     /**
+     * @param string $loc required
+     * @return object
+     */
+    
+    function locale($loc) {
+        $this->locale = $loc;
+        return $this;
+    }
+    
 	/**
 	* @param int $n required
 	* @return object
@@ -196,33 +259,49 @@ class TwitterSearch {
 		$request  = 'http://search.twitter.com/search.'.$this->type;
 		$request .= '?q='.urlencode($this->query);
 		
-		if(isset($this->rpp)) {
-			$request .= '&rpp='.$this->rpp;
-		}
-		
-		if(isset($this->page)) {
-			$request .= '&page='.$this->page;
-		}
-		
-		if(isset($this->lang)) {
-			$request .= '&lang='.$this->lang;
-		}
-		
-		if(isset($this->since)) {
-			$request .= '&since_id='.$this->since;
-		}
-		
-		if($this->show_user) {
-			$request .= '&show_user=true';
-		}
-		
-		if(isset($this->geocode)) {
-			$request .= '&geocode='.$this->geocode;
-		}
-		
-		if($reset_query) {
-			$this->query = '';
-		}
+		 if(isset($this->rpp)) {
+            $request .= '&rpp='.$this->rpp;
+        }
+        
+        if(isset($this->page)) {
+            $request .= '&page='.$this->page;
+        }
+        
+        if(isset($this->lang)) {
+            $request .= '&lang='.$this->lang;
+        }
+        
+        if(isset($this->locale)) {
+           $request .= '&locale='.$this->locale;
+        }
+        
+        if(isset($this->since)) {
+            $request .= '&since_id='.$this->since;
+        }
+        
+        if(isset($this->max)) {
+            $request .= '&max_id='.$this->max;
+        }
+        
+        if($this->show_user) {
+            $request .= '&show_user=true';
+        }
+        
+        if(isset($this->geocode)) {
+            $request .= '&geocode='.$this->geocode;
+        }
+        
+        if(isset($this->result_type)) {
+            $request .= '&result_type='.$this->result_type;
+        }
+        
+        if($this->include_entities) {
+            $request .= '&include_entities=true';
+        }
+        
+        if($reset_query) {
+            $this->query = '';
+        }
 		
 		return $this->objectify($this->process($request))->results;
 	}
